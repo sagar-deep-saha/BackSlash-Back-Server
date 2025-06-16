@@ -24,7 +24,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",  # FrontEnd
         "http://localhost:5177",   # TwitterClone
-        "https://backslash-front.vercel.app"   # Production Frontend
+        "https://back-slash-front-ui.vercel.app"   # Production Frontend
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
@@ -50,8 +50,8 @@ def send_to_twitterback(content):
         "replies": 0
     }
     try:
-        resp = requests.post("http://localhost:8001/api/tweets", json=tweet)
-        # resp = requests.post("https://backslash-twitter-back.vercel.app/api/tweets", json=tweet)
+        # resp = requests.post("http://localhost:8001/api/tweets", json=tweet)
+        resp = requests.post("https://back-slash-back-server.vercel.app/api/tweets", json=tweet)
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
@@ -133,6 +133,6 @@ async def chat(request: ChatRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000) 
+    # uvicorn.run(app, host="127.0.0.1", port=8000) 
     # uvicorn.run(app, host="https://backslash-backend.vercel.app", port=8000)
-    # uvicorn.run(app)
+    uvicorn.run(app)
