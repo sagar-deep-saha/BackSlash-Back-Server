@@ -108,61 +108,77 @@ async def chat(request: ChatRequest):
                 "parts": [{
                     "text": request.message
                 }]
-            }]
+            }],
+            "generationConfig": {
+                "temperature": 0.7,
+                "topK": 40,
+                "topP": 0.95,
+                "maxOutputTokens": 1024,
+            }
         }
         
         # Make API request
-        response = requests.post(
-            full_url,
-            json=payload,
-            headers={
-                "Content-Type": "application/json"
-            }
-        )
-        
-        logger.info(f"Gemini API response status: {response.status_code}")
-        
-        if response.status_code != 200:
-            error_msg = f"Gemini API error: {response.text}"
-            logger.error(error_msg)
-            return {"response": f"Error: {error_msg}"}
-        
         try:
-            response_data = response.json()
-            logger.info("Successfully parsed Gemini API response")
-        except json.JSONDecodeError as e:
-            error_msg = f"Failed to parse Gemini API response: {str(e)}"
-            logger.error(error_msg)
-            return {"response": f"Error: {error_msg}"}
-        
-        if "candidates" not in response_data or not response_data["candidates"]:
-            error_msg = "Invalid response from Gemini API: No candidates found"
-            logger.error(error_msg)
-            return {"response": f"Error: {error_msg}"}
-        
-        try:
-            # Extract the response text
-            gemini_response = response_data["candidates"][0]["content"]["parts"][0]["text"]
-            logger.info("Successfully extracted response from Gemini API")
-        except (KeyError, IndexError) as e:
-            error_msg = f"Failed to extract response from Gemini API: {str(e)}"
-            logger.error(error_msg)
-            return {"response": f"Error: {error_msg}"}
-        
-        # Send to TwitterBack
-        tweet = send_to_twitterback(gemini_response)
-        if tweet:
-            logger.info("Successfully sent to TwitterBack")
-        else:
-            logger.warning("Failed to send to TwitterBack")
-        
-        # Return the response in the expected format
-        return {"response": gemini_response}
+            response = requests.post(
+                full_url,
+                json=payload,
+                headers={
+                    "Content-Type": "application/json"
+                }
+            )
             
-    except requests.exceptions.RequestException as e:
-        error_msg = f"Request failed: {str(e)}"
-        logger.error(error_msg)
-        return {"response": f"Error: {error_msg}"}
+            logger.info(f"Gemini API response status: {response.status_code}")
+            logger.info(f"Gemini API response: {response.text}")
+            
+            if response.status_code == 400:
+                error_data = response.json()
+                if "error" in error_data and "message" in error_data["error"]:
+                    error_msg = error_data["error"]["message"]
+                    logger.error(f"Gemini API error: {error_msg}")
+                    return {"response": f"Error: {error_msg}"}
+            
+            if response.status_code != 200:
+                error_msg = f"Gemini API error: {response.text}"
+                logger.error(error_msg)
+                return {"response": f"Error: {error_msg}"}
+            
+            try:
+                response_data = response.json()
+                logger.info("Successfully parsed Gemini API response")
+            except json.JSONDecodeError as e:
+                error_msg = f"Failed to parse Gemini API response: {str(e)}"
+                logger.error(error_msg)
+                return {"response": f"Error: {error_msg}"}
+            
+            if "candidates" not in response_data or not response_data["candidates"]:
+                error_msg = "Invalid response from Gemini API: No candidates found"
+                logger.error(error_msg)
+                return {"response": f"Error: {error_msg}"}
+            
+            try:
+                # Extract the response text
+                gemini_response = response_data["candidates"][0]["content"]["parts"][0]["text"]
+                logger.info("Successfully extracted response from Gemini API")
+            except (KeyError, IndexError) as e:
+                error_msg = f"Failed to extract response from Gemini API: {str(e)}"
+                logger.error(error_msg)
+                return {"response": f"Error: {error_msg}"}
+            
+            # Send to TwitterBack
+            tweet = send_to_twitterback(gemini_response)
+            if tweet:
+                logger.info("Successfully sent to TwitterBack")
+            else:
+                logger.warning("Failed to send to TwitterBack")
+            
+            # Return the response in the expected format
+            return {"response": gemini_response}
+                
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Request failed: {str(e)}"
+            logger.error(error_msg)
+            return {"response": f"Error: {error_msg}"}
+            
     except Exception as e:
         error_msg = f"Unexpected error: {str(e)}"
         logger.error(error_msg)
@@ -170,4 +186,5 @@ async def chat(request: ChatRequest):
 
 if __name__ == "__main__":
     import uvicorn
+    # uvicorn.run(app, host="0.0.0.0", port=8000)
     uvicorn.run(app, host="0.0.0.0", port=8000)
