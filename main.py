@@ -22,13 +22,14 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # FrontEnd
-        # "http://localhost:5177",   # TwitterClone
-        "https://back-slash-front-ui.vercel.app"   # Production Frontend
+        "http://localhost:5173",  # FrontEnd local
+        "https://back-slash-front-ui.vercel.app",   # Production Frontend
+        "https://backslash-front.vercel.app"   # Alternative Production Frontend
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+    expose_headers=["*"]  # Expose all headers
 )
 
 # Request model
