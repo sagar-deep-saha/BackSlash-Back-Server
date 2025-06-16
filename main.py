@@ -23,7 +23,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # FrontEnd
-        "http://localhost:5177",   # TwitterClone
+        # "http://localhost:5177",   # TwitterClone
         "https://back-slash-front-ui.vercel.app"   # Production Frontend
     ],
     allow_credentials=True,
@@ -51,7 +51,7 @@ def send_to_twitterback(content):
     }
     try:
         # resp = requests.post("http://localhost:8001/api/tweets", json=tweet)
-        resp = requests.post("https://back-slash-back-server.vercel.app/api/tweets", json=tweet)
+        resp = requests.post("https://backslash-twitter-back-xi.vercel.app/api/tweets", json=tweet)
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
